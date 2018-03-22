@@ -20,13 +20,32 @@
             }
         </style>
         <script>
+            function validate2() {
+                let a = $('#id_barang');
+                let e_a = $('#e_spot1');
+                if(a.val() == '') {
+                    e_a.text('* Id tidak boleh kosong');
+                    return false;
+                } else {
+                    e_a.text('');
+                    if(confirm("Apa anda yakin ?")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
             function validate() {
-                let b = $('#nama_data');
-                let c = $('#nama_invent');
-                let d = $('#kuantitas');
+                let b = $('#nama_barang');
+                let c = $('#model_barang');
+                let d = $('#jumlah_barang');
+                let e = $('#tahun_pembelian');
+                let f = $('#kondisi');
+                let g = $('#keterangan');
                 let e_b = $('#e_spot2');
                 let e_c = $('#e_spot3');
                 let e_d = $('#e_spot4');
+                let e_e = $('#e_spot5');
                 let error = false;
                 if(b.val() == '') {
                     e_b.text('* nama barang tidak boleh kosong');
@@ -35,16 +54,22 @@
                     e_b.text('');
                 }
                 if(c.val() == '') {
-                    e_c.text('* nama inventaris tidak boleh kosong');                    
+                    e_c.text('* model barang tidak boleh kosong');                    
                     error++;
                 } else {
                     e_c.text('');
                 }
                 if(d.val() == '') {
-                    e_d.text('* kuantitas tidak boleh kosong');
+                    e_d.text('* jumlah barang tidak boleh kosong');
                     error++;
                 } else {
                     e_d.text('');
+                }
+                if(e.val() == '') {
+                    e_e.text('* tahun pembelian tidak boleh kosong');
+                    error++;
+                } else {
+                    e_e.text('');
                 }
                 console.log(error);
                 if(error != 0) {
@@ -64,7 +89,7 @@
                     <div class="col-md-6">
                         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="get">
                             <div class="input-group">
-                                <input type="search" class="form-control" name="search" placeholder="Search ID">
+                                <input type="search" class="form-control" name="search" placeholder="Search ID" />
                                 <span class="input-group-btn">
                                     <input class="btn btn-success" type="submit" value="Go" />
                                 </span>
@@ -86,16 +111,32 @@
                         $search = $_GET['search'];
                         $conn = new mysqli($server, $username, $password, $dbname);
                         if($search != '') {
-                            $sql = "SELECT * FROM data_inventaris WHERE id_inventaris=$search";
+                            $sql = "SELECT * FROM inventaris_data WHERE id_barang=$search";
                         } else {
-                            $sql = "SELECT * FROM data_inventaris";
+                            $sql = "SELECT * FROM inventaris_data";
                         }
                         $result = $conn->query($sql);
                         if($result->num_rows > 0) {
-                            echo "<table class='table table-bordered'>";
-                            echo "<tr class='thead-dark'><th>ID Inventaris</th><th>Nama Barang</th><th>Nama Inventaris</th><th>Kuantitas</th><tr>";
+                            echo "<table class='table table-bordered table-responsive'>";
+                            echo "<tr class='thead-dark'>
+                            <th>ID Barang</th>
+                            <th>Nama Barang</th>
+                            <th>Model Barang</th>
+                            <th>Jumlah Barang</th>
+                            <th>Tahun Pembelian</th>
+                            <th>Kondisi</th>
+                            <th>Keterangan</th>
+                            <tr>";
                             while($row = $result->fetch_assoc()) {
-                                echo "<tr><td>$row[id_inventaris]</td><td>$row[nama_data]</td><td>$row[nama_inventaris]</td><td>$row[kuantitas]</td></tr>";
+                                echo "<tr>
+                                <td>$row[id_barang]</td>
+                                <td>$row[nama_barang]</td>
+                                <td>$row[model_barang]</td>
+                                <td>$row[jumlah_barang]</td>
+                                <td>$row[tahun_pembelian]</td>
+                                <td>$row[kondisi]</td>
+                                <td>$row[keterangan]</td>
+                                </tr>";
                             }
                             echo "</table>";
                         } else {
@@ -104,26 +145,70 @@
                     ?>
                 </div>
                 <div class="col-md-4">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-                        Rekam data inventaris
-                    </button>
-                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createModal">
+                            Rekam data inventaris
+                        </button>
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+                            Hapus data inventaris
+                        </button>
+                    </div>
+                    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Rekam data inventaris</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="deleteModalLabel">Hapus data inventaris</h5>
+                                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button> 
+                                </div>
+                                <div class="modal-body">
+                                    <form action="<?php echo htmlspecialchars('deleteData.php') ?>" method="post" onsubmit='return validate2()'>
+                                        <p id="e_spot1" class="text-danger"></p>
+                                        <input type="number" name="id_barang" class="form-control" id="id_barang" placeholder="Masukan ID barang"/>
+                                        <br>
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                                        <button type="submit" class="btn btn-danger">Kirim</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title" id="createModalLabel">Rekam data inventaris</h5>
+                                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
                                     <form action="<?php echo htmlspecialchars('createData.php'); ?>" method="post" onsubmit='return validate()'>
                                         <p id="e_spot2" class="text-danger"><p>
-                                        <input id="nama_data" class="form-control" type="text" name="nama_data" placeholder="Nama Barang" />
+                                        <input id="nama_barang" class="form-control" type="text" name="nama_barang" placeholder="Nama Barang" />
                                         <p id="e_spot3" class="text-danger"><p>
-                                        <input id="nama_invent" class="form-control" type="text" name="nama_invent" placeholder="Nama Inventaris" />
+                                        <input id="model_barang" class="form-control" type="text" name="model_barang" placeholder="Model Barang" />
                                         <p id="e_spot4" class="text-danger"><p>
-                                        <input id="kuantitas" class="form-control" type="number" name="kuantitas" placeholder="Kuantitas" />
+                                        <input id="jumlah_barang" class="form-control" type="number" name="jumlah_barang" placeholder="Jumlah Barang" />
+
+                                        <p id="e_spot5" class="text-danger"><p>
+                                        <input id="tahun_pembelian" class="form-control" type="date" name="tahun_pembelian" placeholder="Tahun Pembelian" />
+                                        <br>
+                                        <label for="kondisi">Kondisi: </label>
+                                        <select name="kondisi" id="kondisi" class="form-control">
+                                            <option value="Baru">Baru</option>
+                                            <option value="Bekas">Bekas</option>
+                                        </select>
+                                        <!--<input id="kondisi" class="form-control" type="number" name="jumlah_barang" placeholder="Jumlah Barang" />-->
+                                        <br>
+                                        <label for="keterangan">Keterangan: </label>
+                                        <select name="keterangan" id="kondisi" class="form-control">
+                                            <option value="Baik">Baik</option>
+                                            <option value="Cukup">Cukup</option>
+                                            <option value="Kurang baik">Kurang baik</option>
+                                        </select>
+                                        <!--<input id="keterangan" class="form-control" type="number" name="jumlah_barang" placeholder="Jumlah Barang" />-->
                                         <br>
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
                                         <button type="submit" class="btn btn-primary">Kirim</button>
